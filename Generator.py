@@ -10,7 +10,7 @@ class DGenerator():
         self.variance = variance        
         self.results = np.array([[0.0]*self.dim]*self.npoints)
         self.generate()
-       # self.plot()
+        self.plot()
         
     def generate(self):
         i=0
@@ -23,12 +23,19 @@ class DGenerator():
             i+=1
         print self.results
         
-#    def plot(self):
- #       self.plot =
- #       plt.hist(self.results[])
-  #      plt.title
-  #      fig = plt.gcf()
+    def plot(self):
+        k=0
+        x=[]
+        print(self.npoints)
+        while(k<self.npoints):
+            x.append(self.results[k,0])
+            k+=1
+            
+        print(x)
+        plt.hist(x)
+        plt.title("Guassian")
+        plt.xlabel("Don")
+        plt.ylabel("Pavel")
+        plt.show()
+
         
-
-
-print("hello world")
