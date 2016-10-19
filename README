@@ -15,6 +15,7 @@ https://arxiv.org/pdf/0906.0664v3.pdf
 Timeline:
 20161018
 Meeting with Prof. Heavens
+
 20161019
 Worked on data generator
 Able to generate arrays of points sampled from a Gaussian distribution, created histograms and scatterplots from data generated. Histograms can work for N dimensions, but a single scatterplot can visualise maximum 3 dimensions. 
@@ -23,6 +24,10 @@ Began thinking about nearest neighbour problem.
 Nearest neighbours: https://www.dataquest.io/blog/k-nearest-neighbors-in-python/
 Nearest neighbours (but with a part regarding self learning): https://blog.cambridgecoding.com/2016/01/16/machine-learning-under-the-hood-writing-your-own-k-nearest-neighbour-algorithm/
 Lambda functions: http://stackoverflow.com/questions/890128/why-are-python-lambdas-useful
+Made nearest neighbour program
+Research nearest neighbour constant of proportionality with number density?
 
 Quotes:
-20161019 "We don't care about colour"
+20161019 
+"We don't care about colour"
+"We can't work without histograms"
