@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
 class DGenerator():
     def __init__(self, dimension, npoints, mean, variance):
         self.dim = dimension
@@ -30,12 +31,33 @@ class DGenerator():
         while(k<self.npoints):
             x.append(self.results[k,0])
             k+=1
-            
-        print(x)
+        k=0
+        y=[]
+        while(k<self.npoints):
+            y.append(self.results[k,1])
+            k+=1
+        plt.figure(1)
+        plt.subplot2grid((3,2),(0,0))    
+       
         plt.hist(x)
         plt.title("Guassian")
-        plt.xlabel("Don")
-        plt.ylabel("Pavel")
+        plt.xlabel("x coordinate")
+        plt.ylabel("number of occurances")
+        
+        
+        plt.subplot2grid((3,2),(0,1))
+        plt.hist(y)
+        plt.title("Guassian")
+        plt.xlabel("x coordinate")
+        plt.ylabel("number of occurances")
+        
+        plt.subplot2grid((3,2),(1,0), colspan=2, rowspan=2, aspect='equal')
+        plt.scatter(x,y)
+        plt.title("Scatter")
+        plt.xlabel("xcoordinate")
+        plt.ylabel("ycoordinate")
+        plt.grid()
         plt.show()
+
 
         
