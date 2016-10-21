@@ -27,7 +27,20 @@ Lambda functions: http://stackoverflow.com/questions/890128/why-are-python-lambd
 Made nearest neighbour program
 Research nearest neighbour constant of proportionality with number density?
 
+20161021
+Couldn't find nearest neighbour constant of proportionality with number density yet.
+Have no other solution for the program other than to run through every single point and calculate the distance between itself and every other point.
+Other possibilities: 1. Separate into cells/sectors. But problem with that is that nearest neighbour may not be in the same cell as Heavens said because real data will be very scattered and large. 2. K nearest neighbours method. But to do that we would have to calculate the distance between every point with every other point anyway.
+Writing program which will give the number density as a function of the nearest neighbour.
+Possible solutions to nearest neighbour program being slow: http://www.cs.cmu.edu/~quixote/NearestNeighbor.pdf
+Wrote program to calculate constant of proportionality between number density / nearest neighbour distance and probability.
+Maybe we need to just find our own constant of proportionality, since we need the number density for every point, use the nearest neighbour distance for each point to find the "volume" which is just the sphere with radius of nearest neighbour distance and then one point in that volume = number density.
+But how would that work in more than 3 dimensions? -> N-spheres -> Gamma functions
+
 Quotes:
 20161019 
 "We don't care about colour"
 "We can't work without histograms"
+
+20161021
+"Can do gamma functions in python. I love python." (This was soon after he said he hated python for making a list from square brackets)
