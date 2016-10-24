@@ -37,6 +37,10 @@ Wrote program to calculate constant of proportionality between number density / 
 Maybe we need to just find our own constant of proportionality, since we need the number density for every point, use the nearest neighbour distance for each point to find the "volume" which is just the sphere with radius of nearest neighbour distance and then one point in that volume = number density.
 But how would that work in more than 3 dimensions? -> N-spheres -> Gamma functions
 
+20162024
+Distribution of Euclidean Distances Between Randomly Distributed Gaussian Points in n-Space: https://arxiv.org/pdf/1508.02238v1.pdf
+Found a list of Aj, deciding how to find the mean.
+
 Quotes:
 20161019 
 "We don't care about colour"
