@@ -46,7 +46,11 @@ Starting work on Heaven's questions from yesterday:
 - What is the form of the distribution of p(D|n) and D, in d dimensions? If not, could work it out for 2 dimensions with first principles?
 - Can you estimate n-hat from D, so that n is unbiased? ( <n-hat> = n )
 Nearest Neighbour Analysis in 1D: http://www.osti.gov/scitech/servlets/purl/33152-uFJqec/webviewable/
-
+Might be useful: http://www.atmo.arizona.edu/students/courselinks/spring13/atmo589/ATMO489_online/lecture_19/lect19_nearest_neighbor_dist.html
+Fitting a curve to histograms:
+http://stackoverflow.com/questions/22841234/fitting-curve-to-histogram-and-extracting-functional-form-python
+http://stackoverflow.com/questions/7805552/fitting-a-histogram-with-python
+http://stackoverflow.com/questions/35544233/fit-a-curve-to-a-histogram-in-python
 
 Quotes:
 20161019 
