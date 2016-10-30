@@ -22,47 +22,47 @@ class call():
         i=0  
            
         while i<n:
-            print i
+            print (i)
             a=self.init(2,100,0,1)
             self.res100[i]=self.meanA
             i+=1
             
-        print "100 done"
+        print ("100 done")
         i=0       
         while i<n:
             a=self.init(2,250,0,1)
             self.res250[i]=self.meanA
             i+=1
             
-        print "250 done"
+        print ("250 done")
         i=0       
         while i<n:
             a=self.init(2,500,0,1)
             self.res500[i]=self.meanA
             i+=1
-        print "500 done"
+        print ("500 done")
         i=0       
         while i<n:
             a=self.init(2,750,0,1)
             self.res750[i]=self.meanA
             i+=1
             
-        print "750 done"
+        print ("750 done")
         i=0       
         while i<n:
             a=self.init(2,1000,0,1)
             self.res1000[i]=self.meanA
             i+=1
-        print "100: \n"
-        print self.res100
-        print "250: \n"
-        print self.res250
-        print "500: \n"
-        print self.res500
-        print "750: \n"
-        print self.res750
-        print "1000: \n"
-        print self.res1000
+        print ("100: \n")
+        print (self.res100)
+        print ("250: \n")
+        print (self.res250)
+        print ("500: \n")
+        print (self.res500)
+        print ("750: \n")
+        print (self.res750)
+        print ("1000: \n")
+        print (self.res1000)
          
  
 class DGenerator():
@@ -84,8 +84,9 @@ class DGenerator():
         self.probability()
         self.estimation()
         #self.integration()
-        self.bincount()
+        #self.bincount()
         self.plot()
+        self.integration()
         
         
     def gaussian(self):
@@ -125,7 +126,7 @@ class DGenerator():
             self.distance[i]=min(dist)
             
             i+=1
-       # print self.distance
+        print (self.distance)
         
     def probability(self):
         # This calculates for each point the probability of the point being generated. Creates an array where self.prob[i] is
@@ -176,11 +177,33 @@ class DGenerator():
             self.help =(self.count[i]/self.normconst*a[i]**2*a[1])
             self.totconst = self.totconst+self.help
             i+=1
-        print self.totconst    
+        print (self.totconst)    
         """FINISH THIS PART. NEED THE WHOLE CONSTANT"""
        # print self.total
         
-               
+    def f1(self):
+        self.bin+=1
+        return self.pdf2[self.bin]
+       
+    def integration(self):
+        self.bin =-1
+        self.pdf2=self.pdf[0]
+        self.step=self.pdf[1]
+        i=0
+        self.intsteps=np.array([0.0]*len(self.pdf2))        
+        while(i<len(self.pdf[1])-1):
+           self.intsteps[i]=((self.step[i]+self.step[i+1])/2)
+           i+=1
+          
+        y1=self.pdf2
+        self.normpdf= integrate.simps(y1,self.intsteps)
+        print(self.normpdf)
+        y2=y1/self.normpdf*(1/np.square(self.intsteps))
+        print("test")
+        print(y2)
+        self.normpdf2= integrate.simps(y2,self.intsteps)
+        print(self.normpdf2)
+       # print(self.step, self.intsteps)
         
               
         
@@ -202,11 +225,12 @@ class DGenerator():
             
             
         plt.figure(1)         
-        plt.hist(self.distance, bins=np.arange(min(self.distance), max(self.distance) + 0.1, 0.005) )
+        self.pdf = plt.hist(self.distance,bins=self.npoints, normed=True )
         plt.title("Nearest neighbour")
         plt.xlabel("distance")
-        plt.ylabel("number of occurances")
+        plt.ylabel("probability??")
         plt.show()
+        
         
         plt.figure(2)
         plt.scatter(x,y)
@@ -217,8 +241,9 @@ class DGenerator():
         plt.show()
         
         plt.figure(3)       
-        plt.hist(self.constant, bins=np.arange(min(self.constant), max(self.constant) + 50, 50))
+        plt.hist(self.constant, bins=self.npoints)
         plt.title("Constant")
         plt.xlabel("value")
         plt.ylabel("number of occurances")
         plt.show()
+
