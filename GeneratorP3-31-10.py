@@ -53,8 +53,8 @@ class DGenerator():
         self.variance = variance        
         self.data = np.array([[0.0]*self.dim]*self.npoints) # this is the array in which the data will be generated into
         
-        self.gaussian() #pick which distribution you want to use, either gaussian or flat
-        #self.flat()
+        #self.gaussian() #pick which distribution you want to use, either gaussian or flat
+        self.flat()
         self.distance()
         self.probability()
         self.estimation()
@@ -202,13 +202,13 @@ class DGenerator():
             
             
         plt.figure(1)         
-        self.pdf = plt.hist(self.distance,bins="auto", normed=True )
+        self.pdf = plt.hist(self.distance,bins="fd", normed=True )
         plt.title("Nearest neighbour")
         plt.xlabel("distance")
         plt.ylabel("probability??")
-       # plt.show()
+        plt.show()
         
-        
+        """ 
         plt.figure(2)
         plt.scatter(x,y)
         plt.title("Scatter of points")
@@ -222,4 +222,5 @@ class DGenerator():
         plt.title("Constant")
         plt.xlabel("value")
         plt.ylabel("number of occurances")
-        #plt.show()
+        #plt.show() """
+
