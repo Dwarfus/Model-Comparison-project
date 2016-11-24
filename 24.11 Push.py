@@ -2,7 +2,7 @@
 """
 Created on Thu Nov 24 12:09:21 2016
 
-@author: Pavel
+@author: Pavel Kroupa
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -133,6 +133,49 @@ class Main:
         print(self.gaussanalyt)
         plt.show()
 
+    def aestimator(self):
+        self.a=self.density/self.like
+        #print(self.a)
+        plt.figure(2)   
+        self.histogram2 = plt.hist(self.a,bins="fd", normed=True )       
+        plt.title("A estimation")
+        plt.xlabel("A")
+        plt.ylabel("probability")
+        
+
+        # finding a good starting estimate for the mean
+        i=0
+        maxhist = max(self.histogram2[0])
+        for hbin in self.histogram2[0]:
+            if( hbin== maxhist):
+                #print("hey")
+                maxvalue=i
+                None
+            i+=1
+            
+        #index = np.where(self.histogram2[0]==self.histogram2.max() )    
+        
+
+                
+        j=0
+        self.bincentres2=np.array([0.0]*(len(self.histogram2[1])-1))
+        
+        while j<(len(self.histogram2[1])-1):
+            
+            self.bincentres2[j]=(self.histogram2[1][j]+self.histogram2[1][j+1])/2
+            
+            j+=1
+        #print(self.bincentres2)
+        #print(maxhist, self.bincentres2[maxvalue])
+        self.agauss,pcov3 = curve_fit(Main.gauss,self.bincentres2,self.histogram2[0],p0=[maxhist,self.bincentres2[maxvalue],self.bincentres2[maxvalue]/2])
+        plt.plot(self.bincentres2,Main.gauss(self.bincentres2,*self.agauss),'ro:',label='fit')
+        print("the fitted variables of A distr are: normalisation constant, mean, standard dev")
+        print(self.agauss)        
+        
+        
+        
+    
+        plt.show()
         
     def call(self):
         #self.gaussian()
@@ -142,8 +185,10 @@ class Main:
         self.plot()
         self.fit()
         self.analyticfit()
+        self.aestimator()
 
 
         
-a=Main(2,250,[1.0,1.0],1)            
+a=Main(2,250,[1.0,1.0],5)            
+            
             
