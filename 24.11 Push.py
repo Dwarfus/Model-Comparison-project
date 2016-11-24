@@ -122,6 +122,7 @@ class Main:
         dkpdf= (lamda**(self.kth-1)*np.exp(-lamda)*2*np.pi*r*n/math.factorial(self.kth-1))
         return dkpdf
         
+        
     def analyticfit(self):
         self.maxbin=max(self.histogram[1])
         self.minbin=min(self.histogram[1])
@@ -132,6 +133,8 @@ class Main:
         print("the fitted variables of analytic function are: normalisation constant, mean, standard dev")
         print(self.gaussanalyt)
         plt.show()
+        
+ 
 
     def aestimator(self):
         self.a=self.density/self.like
@@ -177,6 +180,34 @@ class Main:
     
         plt.show()
         
+        
+    def locala(self):
+        self.steps3=np.linspace(0, 1.5, 100)
+        plt.figure(3)
+        self.newcon=np.array([1.0]*len(self.density))
+        self.newmean=np.array([1.0]*len(self.density))
+        self.newvariance=np.array([1.0]*len(self.density))
+        i=0
+        
+        for value in self.density:
+            scale = (self.maindensity/value)**(1/self.dim)
+            self.newcon[i]=self.gaussdata[0]
+            self.newmean[i] = self.gaussdata[1]*scale
+            self.newvariance[i]= self.gaussdata[2]
+            plt.plot(self.steps3,Main.gauss(self.steps3,self.newcon[i], self.newmean[i], self.newvariance[i]),'ro:',label='fit')
+            i+=1
+        plt.show() 
+        
+        
+        
+        self.sig2=np.sum((self.newvariance**2)**(-1))
+        self.meanpar = (np.sum(self.newmean/(self.newvariance**2)))**2*self.sig2**(-1)
+        self.meansq=np.sum(self.newmean**2/self.newvariance**2)
+        self.totalexp=0.5*(self.meansq-self.meanpar)
+        print(self.totalexp)
+            
+            
+            
     def call(self):
         #self.gaussian()
         self.flat()
@@ -186,9 +217,10 @@ class Main:
         self.fit()
         self.analyticfit()
         self.aestimator()
+        self.locala()
 
 
         
-a=Main(2,250,[1.0,1.0],5)            
+a=Main(2,500,[1.0,1.0],10)            
             
             
