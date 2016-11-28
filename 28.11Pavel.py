@@ -69,7 +69,7 @@ class Main:
             dist=[]
             for other in self.data:
                 if (i==j):
-                    None
+                    j+=1
                 else:
                    dist.append(distance.euclidean(point, other)) 
                 j+=1
