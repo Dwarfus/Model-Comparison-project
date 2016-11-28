@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 15 11:44:17 2016
+Created on Thu Nov 24 12:09:21 2016
 
-@author: Pavel
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 15 11:26:43 2016
-
-@author: Pavel
+@author: Pavel Kroupa
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,45 +17,53 @@ import matplotlib.pyplot as plt
 from scipy.special import binom
 from scipy.optimize import curve_fit, minimize_scalar
 
-class Main():
-    """
-    This code is the 2D flat distribution excercise to try evaluating the number density.
-    As it is a flat distribution the n is known so we can check that our approach work.
-    Then this method will be aplied on the other data in more D where we will try to evaluate A"""
-    
-    def __init__(self, npoints, x,y, nth):
-        self.npoints = npoints
-        self.x = x
-        self.y = y
-        self.data = np.array([[0.0]*2]*self.npoints)
-        self.nth= nth # the nth nearest neighbour. For the nearest one write 1
-        self.call() # this is a calling method
+class Main:
+    def __init__(self, dim, npoints, mean=[0.0,0.0], kth=1 ):
+        self.data=np.array([[0.0]*dim]*npoints)
+        self.dim=dim
+        self.npoints=npoints
+        self.mean=mean
+        self.kth=kth
+        self.like=np.array([0.0]*self.npoints) # Here the likelihood of each point will be stored
         
+        self.call()
         
-
-    def call(self):
-        """
-        This method is responsible for the calling of the other methods
-        """
-        self.generate()
-        self.distance()
-        self.plotdistance()
-        self.dplot()
-
-    def generate(self):
+   
+    def gaussian(self):
+        # Simple loops, for each point, it generates value for each dimension.
         i=0
-        self.volume=self.x*self.y
-        while(i<self.npoints):            
-            self.data[i,0]=np.random.uniform(0,self.x)
-            self.data[i,1]=np.random.uniform(0,self.y)
-            i+=1      
-            
-            
+        variance=1
+        while (i < self.npoints):
+          
+                            
+            self.data[i] = np.random.normal(self.mean, variance)
+            self.like[i] = 1/(2*np.pi)*np.exp(-(self.data[i,0]-self.mean[0])**2/2*variance**2)*np.exp(-(self.data[i,1]-self.mean[1])**2/2*variance**2)
+            i+=1
+        self.volume = math.pi**(self.dim/2)*(variance*2)**(self.dim)/math.gamma(self.dim/2+1)    # the factor around variance is the number of sigma
+        self.maindensity=self.npoints/self.volume    
+        print("main density is", self.maindensity)
+        #print("the probabilities are", self.like)
+        
+    def flat(self):
+        # Simple loops, for each point, it generates value for each dimension
+        i=0
+        self.x=1
+        self.volume=self.x**(self.dim)
+        while(i<self.npoints):
+            j=0
+            while (j<self.dim):
+                self.data[i,j]=np.random.uniform(0,self.x)
+                j+=1
+            self.like[i]=1/self.volume
+            i+=1 
+        self.maindensity=self.npoints/self.volume
+        print("main density is",self.maindensity)
+       # print("the probabilities are", self.like)
+    
     def distance(self):
         # this calculat the distance to every other point of every point and for each point find the minimu, create an array of these minimas
         i=0
         self.distance=np.array([0.0]*self.npoints)
-        self.distance2=np.array([0.0]*self.npoints)
         for point in self.data:
             j=0
             dist=[]
@@ -72,137 +73,202 @@ class Main():
                 else:
                    dist.append(distance.euclidean(point, other)) 
                 j+=1
-            #self.distance2[i]=min(dist)
+         
             a = np.array(dist)
-            self.distance[i] = np.partition(a, self.nth-1)[self.nth-1]
+            self.distance[i] = np.partition(a, self.kth-1)[self.kth-1]
             i+=1
             
-    def plotdistance(self):
+    def density(self):
+        """Here the local density around each point will be calculated"""
+        self.density=np.array([0.0]*self.npoints)
+        i=0
+        while i<len(self.distance):
+            self.density[i] = self.kth*math.gamma(self.dim/2+1)/(math.pi**(self.dim/2)*self.distance[i]**self.dim)
+            i+=1
+       # print(self.density)    
+            
+            
+    def plot(self):
         plt.figure(1)   
-        self.pdf = plt.hist(self.distance,bins="fd", normed=True )
+        self.histogram = plt.hist(self.distance,bins="auto", normed=True )       
         plt.title("Nearest neighbour")
         plt.xlabel("distance")
         plt.ylabel("probability")
-        plt.show()
-        self.bincentres=np.array([0.0]*len(self.pdf[0]))
         
         
-    def dprob(self, rn):
-        
-        self.Vo = (math.pi)
-        self.binomial = (binom(self.npoints-1, self.nth-1))*(self.npoints-self.nth)
-        self.dpdf = self.binomial*self.Vo**(self.nth)*(1-self.Vo*rn**2)**(self.npoints-self.nth-1)*2*rn**(2*self.nth-1)
-        return self.dpdf
 
-    def gauss(x,a,x0,sigma):
-        return a*math.e**(-(x-x0)**2/(2*sigma**2))        
-        
-    def dplot(self):
-        prob=[]
-        self.step=self.pdf[1]
-        i=0
-        while(i<len(self.pdf[1])-1):
-           self.bincentres[i]=((self.step[i]+self.step[i+1])/2)
-           i+=1
-        self.dsteps = np.arange(0,max(self.step),max(self.step)/100)
-        for value in self.dsteps:
-            prob.append(self.dprob(value))
-            
-        self.popt,pcov = curve_fit(Main.gauss,self.bincentres,self.pdf[0],p0=[1,np.mean(self.bincentres),1])
-
-        self.dnnprob=Main.gauss(self.bincentres,*self.popt)    
-
-        self.dprob=np.array(prob)     #   def distpdf(self):
-            
-        plt.figure(1)   
-        plt.plot(self.dsteps,np.array(self.dprob))
-        self.pdf = plt.hist(self.distance,bins="fd", normed=True )
-        plt.plot(self.bincentres,self.dnnprob,'ro:',label='fit')
-        plt.title("Nearest neighbour")
-        plt.xlabel("distance")
-        plt.ylabel("probability")
-        plt.show()
-        self.multipl=self.dnnprob*self.bincentres
-        self.density=self.nth/self.Vo/(self.bincentres**2)
-        
-        plt.figure(2)   
-        #plt.plot(self.dsteps,np.array(self.dprob))
-        #self.pdf = plt.hist(self.distance,bins="fd", normed=True )
-        plt.plot(self.density,self.dnnprob,'ro:',label='fit')
-        plt.title("Nearest neighbour")
-        plt.xlabel("density")
-        plt.ylabel("probability")
-        plt.show()
-       
-        
-class Call():
-    """
-    This will call the script many times and collect the pdf of the densities for different nth 
-    """        
-    def __init__(self, npoints, x,y, nths=np.array([1,2,3,4,5,6,7,8,9,10])):
-        self.totaldnnp=np.array([[0.0]*3]*len(nths))
-        self.npoi=npoints
-        self.nths=nths
-        i=0
-        for value in nths:
-            print("test1")
-            a=Main(npoints,x,y,value)
-            self.totaldnnp[i]=a.popt
-            
-            i+=1
-        
-        #for each in self.totaldnnp    
-        #print(self.totaldnnp)
-        self.final()
-        
-    def gauss(self,x,a,x0,sigma):
+    def gauss( x,a,x0,sigma):
         return a*math.e**(-(x-x0)**2/(2*sigma**2))
         
+    def fit(self):
+               
+        j=0
+        self.bincentres=np.array([0.0]*(len(self.histogram[1])-1))
         
-    def final(self):
-        self.fin=[]
-       # print("bincentres are", a.bincentres)
-        steps=np.linspace(0.05, 0.60, 100)
-        #print(steps)
-        maxi=0
-        for value in steps:
-            self.npdf=1
+        while j<(len(self.histogram[1])-1):
             
-            for triplet in self.totaldnnp:
-                cons, mean, sigma=triplet
-                self.npdf=self.npdf*self.gauss(value,*triplet)
+            self.bincentres[j]=(self.histogram[1][j]+self.histogram[1][j+1])/2
             
-            if maxi<self.npdf:
-                maxi=self.npdf
-                maxvalue=value            
-            self.fin.append(self.npdf)
+            j+=1
+        
+        self.gaussdata,pcov = curve_fit(Main.gauss,self.bincentres,self.histogram[0],p0=[1,np.mean(self.bincentres),1])
+        plt.plot(self.bincentres,Main.gauss(self.bincentres,*self.gaussdata),'ro:',label='fit')
+        print("the fitted variables are: normalisation constant, mean, standard dev")
+        print(self.gaussdata)        
+        
 
-        print(maxvalue)
-        self.dens=1/math.pi/(steps**2)*np.mean(self.nths)
-        maxdens=1/math.pi/(maxvalue**2)*np.mean(self.nths)
-        print(maxdens)
-       # print (self.fin)
-        """  
+    def analytic(self, r, n):
+        lamda = np.pi**(self.dim/2)*r**(self.dim)/math.gamma(self.dim/2+1)*n
+        dkpdf= (lamda**(self.kth-1)*np.exp(-lamda)*2*np.pi*r*n/math.factorial(self.kth-1))
+        return dkpdf
+
+    def analytic2(self,r):
+        self.V0=np.pi**(self.dim/2)/(math.gamma(self.dim/2+1))
+        self.binomial = (binom(self.npoints-1, self.kth-1))*(self.npoints-self.kth)
+        anpdf=self.binomial*self.V0**(self.kth)*(1-self.V0*r**self.dim)**(self.npoints-self.kth-1)*self.dim*r**(self.dim*self.kth-1)
+        #print(anpdf)
+        return anpdf        
+        
+    def analyticfit(self):
+        self.maxbin=max(self.histogram[1])
+        self.minbin=min(self.histogram[1])
+        self.steps=np.linspace(self.minbin, self.maxbin, 100)
+        
+        self.gaussanalyt,pcov2 =curve_fit(Main.gauss,self.steps,self.analytic(self.steps, self.maindensity),p0=[1,np.mean(self.steps),1])
+        plt.plot(self.steps,Main.gauss(self.steps,*self.gaussanalyt),'ro:',label='fit')
+        print("the fitted variables of analytic function are: normalisation constant, mean, standard dev")
+        print(self.gaussanalyt)
+        
+       # print(self.steps, np.mean(self.steps))
+        self.analyt2,pcov3 =curve_fit(Main.gauss,self.steps,self.analytic2(self.steps),p0=[1,np.mean(self.steps),0.2])
+        plt.plot(self.steps,Main.gauss(self.steps,*self.analyt2),label='fit')
+        
+        plt.show()
+        
+ 
+
+    def aestimator(self):
+        self.a=self.density/self.like
+        #print(self.a)
+        plt.figure(2)   
+        self.histogram2 = plt.hist(self.a,bins="fd", normed=True )       
+        plt.title("A estimation")
+        plt.xlabel("A")
+        plt.ylabel("probability")
+        
+
+        # finding a good starting estimate for the mean
         i=0
-        for value in total:
-            if len(value)<maxlength:
-                value.append(0.0)
-                print(value)
-            else:
-                self.totaldnnp[i]=value
-                i+=1
-                
+        maxhist = max(self.histogram2[0])
+        for hbin in self.histogram2[0]:
+            if( hbin== maxhist):
+                #print("hey")
+                maxvalue=i
+                None
+            i+=1
             
-        print (self.totaldnnp)
-        #self.delta = self.totaldnnp[0]*self.totaldnnp[1]*self.totaldnnp[2]*self.totaldnnp[3]*self.totaldnnp[4]*self.totaldnnp[5]*self.totaldnnp[6]
+                        
+        j=0
+        self.bincentres2=np.array([0.0]*(len(self.histogram2[1])-1))
+        
+        while j<(len(self.histogram2[1])-1):
+            
+            self.bincentres2[j]=(self.histogram2[1][j]+self.histogram2[1][j+1])/2
+            
+            j+=1
+
+        self.agauss,pcov3 = curve_fit(Main.gauss,self.bincentres2,self.histogram2[0],p0=[maxhist,self.bincentres2[maxvalue],self.bincentres2[maxvalue]/2])
+        plt.plot(self.bincentres2,Main.gauss(self.bincentres2,*self.agauss),'ro:',label='fit')
+        print("the fitted variables of A distr are: normalisation constant, mean, standard dev")
+        print(self.agauss)        
+        
+        
+        
+    
+        plt.show()
+        
+        
+    def locala(self):
+        """
+        This method scales the gaussian for every point. It then plots a gaussian pdf for every pooint.
+        It also calculates the expected value - this bit doesnt work and is probably not necessary
+        the second bit uses the fact that product of gaussians is another gaussian and there is an analytic expression for the overall mean. However it gives weird value
         """
         
-        plt.figure(3)   
-        plt.plot(steps,self.fin,'ro:',label='fit')
-        plt.title("Nearest neighbour")
-        plt.xlabel("nearest neighbour")
-        plt.ylabel("probability")
+        self.steps3=np.linspace(0, 1.5, 100)
+        plt.figure(3)
+        self.newcon=np.array([1.0]*len(self.density))
+        self.newmean=np.array([1.0]*len(self.density))
+        self.newvariance=np.array([1.0]*len(self.density))
+        i=0
+        
+        for value in self.density:
+            scale = (self.maindensity/value)**(1/self.dim)
+            self.newcon[i]=self.gaussdata[0]
+            self.newmean[i] = self.gaussdata[1]*scale
+            self.newvariance[i]= self.gaussdata[2]
+            plt.plot(self.steps3,Main.gauss(self.steps3,self.newcon[i], self.newmean[i], self.newvariance[i]),'ro:',label='fit')
+            i+=1
         plt.show() 
         
-b=Call(300,5,5,[3,4,5,6,7,8,9,10,11,12,13])
+        
+        """
+        self.sig2=np.sum((self.newvariance**2)**(-1))
+        self.meanpar = (np.sum(self.newmean/(self.newvariance**2)))**2*self.sig2**(-1)
+        self.meansq=np.sum(self.newmean**2/self.newvariance**2)
+        self.totalexp=0.5*(self.meansq-self.meanpar)
+        #print(self.totalexp)
+        """
+        
+    def logsum(self):
+        """
+        This method evaluates the gaussian pdf, scaled for each local density around every point.
+        The log of values of the scaled pdf are added (add log=multiply values) to find the peak A estimation.
+        Works nicely- didnt check if the value is correct though. 
+        """
+        
+        self.steps2=np.linspace(0, 1.5, 100)
+        self.sum=np.array([0.0]*len(self.steps2))
+        
+        for value in self.density:
+            scale = (self.maindensity/value)**(1/self.dim)
+            newmean=self.gaussdata[1]*scale
+            i=0
+            while i<len(self.steps2):
+                
+                self.sum[i]=self.sum[i]+ math.log( Main.gauss(self.steps2[i],self.gaussdata[0], newmean,self.gaussdata[2] ))
+                i+=1
+        #print (self.sum)
+        self.sum=np.exp(self.sum)
+        
+        max_y = max(self.sum)  # Find the maximum y value
+        max_x = self.steps2[self.sum.argmax()]  # Find the x value corresponding to the maximum y value
+        print ("The value of A is", max_x)
+         
+        
+        plt.figure(4)   
+        plt.plot(self.steps2,self.sum,'ro:',label='fit')
+        plt.title("A constant")
+        plt.xlabel("A constant")
+        plt.ylabel("``probability``")
+        plt.show()
+            
+            
+    def call(self):
+        #self.gaussian()
+        self.flat()
+        self.distance()
+        self.density()
+        self.plot()
+        self.fit()
+        self.analyticfit()
+        self.aestimator()
+        self.locala()
+        self.logsum()
+        
+       
+        """Comment> The flattening of the D distribution might be due to boundary effects. which makes the distance larger than it should actually be"""
 
+        
+a=Main(2,200,[1.0,1.0],10)            
+            
