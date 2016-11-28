@@ -41,7 +41,7 @@ class Main:
             i+=1
         self.volume = math.pi**(self.dim/2)*(variance*2)**(self.dim)/math.gamma(self.dim/2+1)    # the factor around variance is the number of sigma
         self.maindensity=self.npoints/self.volume    
-        print("main density is", self.maindensity)
+       # print("main density is", self.maindensity)
         #print("the probabilities are", self.like)
         
     def flat(self):
@@ -57,7 +57,7 @@ class Main:
             self.like[i]=1/self.volume
             i+=1 
         self.maindensity=self.npoints/self.volume
-        print("main density is",self.maindensity)
+        #print("main density is",self.maindensity)
        # print("the probabilities are", self.like)
     
     def distance(self):
@@ -118,11 +118,14 @@ class Main:
         
 
     def analytic(self, r, n):
+        """
+        Analytic function obtained through Poisson method"""
         lamda = np.pi**(self.dim/2)*r**(self.dim)/math.gamma(self.dim/2+1)*n
         dkpdf= (lamda**(self.kth-1)*np.exp(-lamda)*2*np.pi*r*n/math.factorial(self.kth-1))
         return dkpdf
 
     def analytic2(self,r):
+        """Analytic function as from the paper"""
         self.V0=np.pi**(self.dim/2)/(math.gamma(self.dim/2+1))
         self.binomial = (binom(self.npoints-1, self.kth-1))*(self.npoints-self.kth)
         anpdf=self.binomial*self.V0**(self.kth)*(1-self.V0*r**self.dim)**(self.npoints-self.kth-1)*self.dim*r**(self.dim*self.kth-1)
@@ -130,6 +133,9 @@ class Main:
         return anpdf        
         
     def analyticfit(self):
+        """
+        Fits the analytic function with a gaussian to get the parameters
+        """
         self.maxbin=max(self.histogram[1])
         self.minbin=min(self.histogram[1])
         self.steps=np.linspace(self.minbin, self.maxbin, 100)
@@ -148,14 +154,19 @@ class Main:
  
 
     def aestimator(self):
+        """
+        This method estimates the A based on the following approach: From nearest neighbour distances the local density can be estimated. 
+        From this the A can be estimated - the histogram will have A on the x axis. The mean of fitted gaussian can??? be considered as the A estimate??
+        This is one way I understood the method 1 given last week. 
+        """
         self.a=self.density/self.like
-        #print(self.a)
+        
         plt.figure(2)   
         self.histogram2 = plt.hist(self.a,bins="fd", normed=True )       
         plt.title("A estimation")
         plt.xlabel("A")
         plt.ylabel("probability")
-        
+        self.average=np.mean(self.a)        
 
         # finding a good starting estimate for the mean
         i=0
@@ -173,16 +184,13 @@ class Main:
         
         while j<(len(self.histogram2[1])-1):
             
-            self.bincentres2[j]=(self.histogram2[1][j]+self.histogram2[1][j+1])/2
-            
+            self.bincentres2[j]=(self.histogram2[1][j]+self.histogram2[1][j+1])/2           
             j+=1
 
         self.agauss,pcov3 = curve_fit(Main.gauss,self.bincentres2,self.histogram2[0],p0=[maxhist,self.bincentres2[maxvalue],self.bincentres2[maxvalue]/2])
         plt.plot(self.bincentres2,Main.gauss(self.bincentres2,*self.agauss),'ro:',label='fit')
-        print("the fitted variables of A distr are: normalisation constant, mean, standard dev")
-        print(self.agauss)        
-        
-        
+        #print("the fitted variables of A estimation are: normalisation constant, mean, standard dev")
+        #print(self.agauss)        
         
     
         plt.show()
@@ -195,7 +203,7 @@ class Main:
         the second bit uses the fact that product of gaussians is another gaussian and there is an analytic expression for the overall mean. However it gives weird value
         """
         
-        self.steps3=np.linspace(0, 1.5, 100)
+        self.steps3=np.linspace(0, self.gaussdata[1]*5, 100)
         plt.figure(3)
         self.newcon=np.array([1.0]*len(self.density))
         self.newmean=np.array([1.0]*len(self.density))
@@ -227,23 +235,25 @@ class Main:
         Works nicely- didnt check if the value is correct though. 
         """
         
-        self.steps2=np.linspace(0, 1.5, 100)
+        self.steps2=np.linspace(0, self.gaussdata[1]*5, 100)
         self.sum=np.array([0.0]*len(self.steps2))
         
         for value in self.density:
             scale = (self.maindensity/value)**(1/self.dim)
+            
             newmean=self.gaussdata[1]*scale
+          
             i=0
             while i<len(self.steps2):
-                
-                self.sum[i]=self.sum[i]+ math.log( Main.gauss(self.steps2[i],self.gaussdata[0], newmean,self.gaussdata[2] ))
+                               
+                if Main.gauss(self.steps2[i],self.gaussdata[0], newmean,self.gaussdata[2])>0: # So it doesnt give math domain error, when the value is so small it rounds it to zero
+                    self.sum[i]=self.sum[i]+ math.log( Main.gauss(self.steps2[i],self.gaussdata[0], newmean,self.gaussdata[2]) )
                 i+=1
-        #print (self.sum)
         self.sum=np.exp(self.sum)
         
-        max_y = max(self.sum)  # Find the maximum y value
-        max_x = self.steps2[self.sum.argmax()]  # Find the x value corresponding to the maximum y value
-        print ("The value of A is", max_x)
+        self.max_y = max(self.sum)  # Find the maximum y value
+        self.max_x = self.steps2[self.sum.argmax()]  # Find the x value corresponding to the maximum y value
+        #print ("The value of A is", max_x)
          
         
         plt.figure(4)   
@@ -253,7 +263,13 @@ class Main:
         plt.ylabel("``probability``")
         plt.show()
             
-            
+    def results(self):
+        print("The main density is", self.maindensity)
+        
+        print ("The value of A using gauss product is", self.max_x)       
+        print("The value of A from A estimation through n is", self.agauss[1])
+        print("the value of A from A est. with mean is", self.average)
+        
     def call(self):
         #self.gaussian()
         self.flat()
@@ -265,10 +281,10 @@ class Main:
         self.aestimator()
         self.locala()
         self.logsum()
-        
+        self.results()
        
         """Comment> The flattening of the D distribution might be due to boundary effects. which makes the distance larger than it should actually be"""
 
         
-a=Main(2,200,[1.0,1.0],10)            
+a=Main(2,300,[1.0,1.0],10)            
             
