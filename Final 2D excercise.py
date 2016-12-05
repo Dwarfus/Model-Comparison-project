@@ -127,7 +127,8 @@ class Main:
         """
         Analytic function obtained through Poisson method"""
         lamda = np.pi**(self.dim/2)*r**(self.dim)/math.gamma(self.dim/2+1)*n
-        dkpdf= (lamda**(self.kth-1)*np.exp(-lamda)*2*np.pi*r*n/math.factorial(self.kth-1))
+        #dkpdf= (lamda**(self.kth-1)*np.exp(-lamda)*2*np.pi*r*n/math.factorial(self.kth-1))
+        dkpdf = (np.exp((self.kth-1)*np.log(lamda)-lamda+np.log(2*np.pi*r*n)-gammaln(self.kth)))
         return dkpdf
 
     def analytic2(self,r):
