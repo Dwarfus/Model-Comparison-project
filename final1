@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Nov 29 10:55:38 2016
-
 @author: donukb
-
 This is (hopefully) the (semi)final version of this code.
 ~ Only applies to 2D gaussian distribution ~
 """
@@ -237,8 +235,10 @@ class NumericalA():
         self.maxbin=max(self.histogram[1])
         self.minbin=min(self.histogram[1])
         self.steps=np.linspace(self.minbin, self.maxbin, 100)
+        intmax= np.argmax(self.histogram[0])
+        print("intmax is", self.histogram[0][intmax])
         
-        self.gaussanalyt,pcov2 =curve_fit(NumericalA.gauss,self.steps,self.analytic(self.steps, self.maindensity),p0=[self.histogram[0][self.histogram[0].argmax] / 2,self.histogram[1][self.histogram[0].argmax],1])
+        self.gaussanalyt,pcov2 =curve_fit(NumericalA.gauss,self.steps,self.analytic(self.steps, self.maindensity),p0=[self.histogram[0][intmax] / 2,self.histogram[1][intmax],self.histogram[1][intmax]/5])
         plt.plot(self.steps,NumericalA.gauss(self.steps,*self.gaussanalyt),'ro:',label='fit')
         plt.show()
         
@@ -282,6 +282,9 @@ class NumericalA():
         m=0
 
         
+        
+        
+        
         guess = self.kth/(math.pi*self.gaussanalyt[1]**2) # estimate the mean of the densities of the gaussians to use as initial guess after dividing by likelihood
         totalguess=0
         for value in self.locallike:
@@ -292,7 +295,7 @@ class NumericalA():
             self.parameters[m]=self.para            
             m+=1
         totalguess=totalguess/m # Total guess is an average of the means of all the gaussians of P(A|D) serves as a mid point for the fitting so no important values are omitted.
- 
+        print(self.locallike)
         # FRom parameters we evaluate the gaussians and add the log
         self.steps3 = np.linspace(1,totalguess*4,200) # these steps are used for plotting for logsums
 
