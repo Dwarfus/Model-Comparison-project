@@ -164,7 +164,7 @@ class NumericalA():
                     distances.append(distance.euclidean(point1,point2))
                     j += 1
             distances.sort()
-            self.kth = 10
+            self.kth = 3
             self.NNdistlist.append(distances[self.kth -1])
             i += 1
             
@@ -199,7 +199,7 @@ class NumericalA():
         self.locallike = []
         for point in self.mudata:
             self.locallike.append(NumericalA.likefunc1D(point[0],self.npoints,self.xsqrsum,self.xixjsum,self.xdatamean) * NumericalA.likefunc1D(point[1],self.npoints,self.ysqrsum,self.yiyjsum,self.ydatamean))
-           # self.locallike.append(self.pointprob(point[0],point[1],self.xdatamean,self.ydatamean,1/np.sqrt(self.bigM)))
+            #self.locallike.append(self.pointprob(point[0],point[1],self.xdatamean,self.ydatamean,1/np.sqrt(self.bigM)))
  
 
     def plot(self):
@@ -244,13 +244,13 @@ class NumericalA():
         """
         self.maxbin=max(self.histogram[1])
         self.minbin=min(self.histogram[1])
-        self.steps=np.linspace(self.minbin/5, self.maxbin, 100)
+        self.steps=np.linspace(self.minbin/5, self.maxbin, 500)
         intmax= np.argmax(self.histogram[0])
         print("intmax is", self.histogram[0][intmax],self.histogram[1][intmax])
-        #probs = self.analytic(self.steps, self.maindensity)
+        probs = self.analytic(self.steps, self.maindensity)
         self.gaussanalyt,pcov2 =curve_fit(NumericalA.gauss,self.steps,self.analytic(self.steps, self.maindensity),p0=[self.histogram[0][intmax]/3 ,self.histogram[1][intmax],self.histogram[1][intmax]/5])
         plt.plot(self.steps,NumericalA.gauss(self.steps,*self.gaussanalyt),'ro:',label='fit')
-        #plt.plot(self.steps, probs )
+        plt.plot(self.steps, probs )
         plt.show()
         print(self.gaussanalyt)
  
@@ -295,7 +295,7 @@ class NumericalA():
         for prob in self.probabilities:
             plt.plot(self.newsteps, prob)
         plt.title("P(n|D)")
-        plt.xlim([0,450000])
+       # plt.xlim([0,450000])
         plt.show()
         
         # Now for each point the x-axis is divided by the likelihood. The probabilities no longer correspond to the same points
@@ -312,24 +312,31 @@ class NumericalA():
         totalguess=0
     
         for value in self.locallike:
-
             newstepsl = self.newsteps/value
-            totalguess=totalguess+guess/value    
-            self.para, pcov2 =curve_fit(NumericalA.gauss,newstepsl,self.probabilities[m],p0=[abs(self.gaussanalyt[0]),guess/value,guess/(value*4)])
-            self.parameters[m]=self.para            
+            inti = self.probabilities[m].argmax()
+            const = self.probabilities[m][inti]
+            mean = newstepsl[inti]
+            
+            self.para, pcov2 =curve_fit(NumericalA.gauss,newstepsl,self.probabilities[m],p0=[const,mean,mean/4])
+            totalguess=totalguess+mean    
+            #self.para, pcov2 =curve_fit(NumericalA.gauss,newstepsl,self.probabilities[m],p0=[abs(self.gaussanalyt[0]),guess/value,guess/(value*4)])
+            self.parameters[m]=self.para    
+           # if m<50 or m>950:
+           #     print("hi", self.parameters[m], const, mean,"std", np.sqrt(np.diag(pcov2)))
             m+=1
         totalguess=totalguess/m # Total guess is an average of the means of all the gaussians of P(A|D) serves as a mid point for the fitting so no important values are omitted.
         #print(self.locallike)
         # FRom parameters we evaluate the gaussians and add the log
         print(totalguess)
         
-        self.steps3 = np.linspace(1,totalguess,500) # these steps are used for plotting for logsums
+        self.steps3 = np.linspace(1,totalguess*20,1000) # these steps are used for plotting for logsums
 
         self.logsum=np.zeros(( len(self.steps3)))
         
         j=0
         plt.figure(4)
         plt.title("P(A|Di)")
+        #plt.xlim([0,200000])
         self.probabilities2=np.zeros((len(self.densitylist), len(self.steps3)))
         for value2 in self.parameters:
 
@@ -395,5 +402,5 @@ class NumericalA():
 
         
 """Below are just some test values to play around with."""
-#c = Generate(2,500)
-b = NumericalA(c,1000)
+#c = Generate(2,2000)
+b = NumericalA(c,500)
