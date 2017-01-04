@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import distance
 import math
 from scipy import integrate
-from scipy.special import binom, gammaln
+from scipy.special import binom, gamma, gammaln
 
 class DataSpace():
     """
@@ -62,7 +62,7 @@ class DataSpace():
         
         self.xixj = (np.sum(xixj) - self.xsqr)/2
         self.yiyj = (np.sum(yiyj) - self.ysqr)/2        
-        print(self.xixj, self.yiyj)
+        #print(self.xixj, self.yiyj)
         
 class Parameterspace():
     """
@@ -93,7 +93,7 @@ class Parameterspace():
             self.mudata[j,0]=np.random.normal(self.xmean, 1/np.sqrt(self.mpoints)) # THe variance is really standard deviation but as it is equal to one it does not matter
             self.mudata[j,1]=np.random.normal(self.ymean, 1/np.sqrt(self.mpoints))       
             j+=1
-        print('Done')
+        print('Parameter space data generated')
         
     def NNdistance(self):
        self.NNdistances = np.zeros((self.npoints, self.npoints-1))
@@ -178,29 +178,52 @@ class Numerical():
         self.aestimator()
         
     def poisson(self, distance, likelihood, avalue):
-        return ((self.kth-1)*np.log(np.pi*distance**2*avalue*likelihood)-(np.pi*distance**2*avalue*likelihood)+(2*np.pi*distance*avalue*likelihood**2)-gammaln(self.kth))
+        #return ((self.kth-1)*np.log(np.pi*distance**2*avalue*likelihood)-(np.pi*distance**2*avalue*likelihood)+(2*np.pi*distance*avalue*likelihood**2)-gammaln(self.kth))
+        #below is an alternative without the log, e.g. the original probability but with the last bit put into the first bracket
+        return ((np.pi*distance**2*avalue*likelihood)**(self.kth))*np.exp(-np.pi*distance**2*avalue*likelihood)*2*likelihood/(gamma(self.kth))
 
     def aestimator(self):
         self.aguess = self.density/self.likelihood
         self.max = max(self.aguess)
         self.min = min(self.aguess)
-        print(self.max, self.min)
-        self.asteps = np.linspace(self.min/10, self.max*5,1000)
-        self.lnprob = np.zeros((len(self.kdist), len(self.asteps)))
+       
+        #print(self.max, self.min)
+        self.asteps = np.linspace(self.min/100, self.max,15000)
+        
+        self.prob = np.zeros((len(self.kdist), len(self.asteps)))
+        self.logsum = np.zeros((1,len(self.asteps)))
+        #print(self.logsum.shape)
         i=0
         plt.figure(1)
         plt.title("P(A|D,L)")
         for distance in self.kdist:
-            self.lnprob[i] = self.poisson(distance, self.likelihood[0], self.asteps)
-            plt.plot(self.asteps,self.lnprob[i])        
+            probab = self.poisson(distance, self.likelihood[0], self.asteps)
+            self.prob[i] = probab
+            self.log = np.log(probab)
+            self.logsum = np.add(self.logsum, self.log)
+           # print(self.logsum.shape)
+            plt.plot(self.asteps,self.prob[i])        
             i+=1
-        print(len(self.lnprob), len(self.lnprob[0]))
+       # plt.xlim([self.min/100, 0.1e8])
         plt.show()
         
+        plt.figure(2)
+        plt.title("peak")
+        plt.plot(self.asteps, self.logsum[0])
+        plt.show()
+        
+        self.max_a = self.asteps[self.logsum.argmax()]
+        self.max_p = max(self.logsum)
+        print(self.max_a)
+        # posterior guess calculation
+        self.posteriorguess = len(self.likelihood)/self.max_a
+        print(self.posteriorguess, c.posterior)
+        
+       
         
         
         
-#a= DataSpace(500, [0,0], [1,1])
-#b = Parameterspace(500,a.xmean, a.ymean, a.xsqr, a.ysqr, a.xixj, a.yiyj, a.mpoints)
+a= DataSpace(5000, [0,0], [1,1])
+b = Parameterspace(5000,a.xmean, a.ymean, a.xsqr, a.ysqr, a.xixj, a.yiyj, a.mpoints)
 c = Analytical(b.npoints,a.xmean, a.ymean, a.xsqr, a.ysqr, a.xixj, a.yiyj, a.mpoints)
 d = Numerical(5, b.NNdistances, b.like)
