@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from scipy.special import binom
 from scipy.optimize import minimize_scalar
 """
-THIS WORKS! NEVER ALTER THIS ONE. wORKS FOR 2D BUT VERY NICELY FOR LARGE KTH
+Works. Especially good results for high Kth
 """
 
 
