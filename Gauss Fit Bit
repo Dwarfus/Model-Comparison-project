@@ -1,8 +1,0 @@
-    def gauss(x,a,x0,sigma):
-        return a*math.e**(-(x-x0)**2/(2*sigma**2))
-        
-    def fit(self):
-        popt,pcov = curve_fit(DGenerator.gauss,self.bincentres,self.pdf2,p0=[1,np.mean(self.bincentres),1])
-        plt.plot(self.bincentres,DGenerator.gauss(self.bincentres,*popt),'ro:',label='fit')
-        print("the fitted variables are: normalisation constant, mean, standard dev")
-        print(popt)
