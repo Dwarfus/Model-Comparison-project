@@ -1,16 +1,13 @@
-Reading is for losers.
-
-Monte Carlo is our best friend.
-
 "to combine the sampling of a continuous probability distribution (using ‘MCMC’) with the idea of Bayesian evidence to numerically determine which model is preferred as an explanation for a dataset"
 Sections 4.1 and 5.1 of Statistical Techniques in Cosmology by Prof. Alan Heavens
 https://arxiv.org/pdf/0906.0664v3.pdf
 
 1. Data Generator
-2. Model Selector
-3. Test Model Selector against real data
-4. Take over the world
-5. Space colonisation
+2. Parameter Data generator
+3. Evidence calculator - analytic method
+4. Evidence calculator - numerical method
+5. Compare results
+
 
 Timeline:
 20161018
@@ -52,10 +49,4 @@ http://stackoverflow.com/questions/22841234/fitting-curve-to-histogram-and-extra
 http://stackoverflow.com/questions/7805552/fitting-a-histogram-with-python
 http://stackoverflow.com/questions/35544233/fit-a-curve-to-a-histogram-in-python
 
-Quotes:
-20161019 
-"We don't care about colour"
-"We can't work without histograms"
 
-20161021
-"Can do gamma functions in python. I love python." (This was soon after he said he hated python for making a list from square brackets)
